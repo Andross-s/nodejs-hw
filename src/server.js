@@ -1,62 +1,38 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import pino from 'pino-http';
 import 'dotenv/config';
+
+import { connectMongoDB } from './db/connectMongoDB.js';
+import notesRoutes from './routes/notesRoutes.js';
+import { logger } from './middleware/logger.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { notFoundHandler } from './middleware/notFoundHandler.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // // Middleware
-app.use(cors());
+
+app.use(logger);
 app.use(helmet());
 app.use(express.json());
 app.use(
-  pino({
-    level: 'info',
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'system',
-        ignore: 'pid,hostname',
-        messageFormat:
-          '{req.method} {req.url} {res.statusCode} - {responseTime}ms',
-        hideObject: true,
-      },
-    },
+  cors({
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    origin: '*',
   }),
 );
 
-// GET-запит до маршруту "/notes" Список усіх нотаток
-app.get('/notes', (req, res) => {
-  res.status(200).json({ message: 'Retrieved all notes' });
-});
-
-// Конкретний користувач за id
-app.get('/notes/:noteId', (req, res) => {
-  const { noteId } = req.params;
-  res.status(200).json({ message: `Retrieved note with ID: ${noteId}` });
-});
-
-// Маршрут для тестування middleware помилки
-app.get('/test-error', () => {
-  // Штучна помилка для прикладу
-  throw new Error('Simulated server error');
-});
+app.use(notesRoutes);
 
 // Middleware 404 (після всіх маршрутів)
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
-});
+app.use(notFoundHandler);
 
 // Middleware для обробки помилок
-app.use((err, req, res, next) => {
-  const isProd = process.env.NODE_ENV === 'production';
-  res.status(500).json({
-    message: isProd ? 'Server Error' : err.message,
-  });
-});
+app.use(errorHandler);
+
+await connectMongoDB();
 
 // Запуск сервера
 app.listen(PORT, () => {
