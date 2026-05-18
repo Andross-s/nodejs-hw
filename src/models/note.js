@@ -26,6 +26,7 @@ const noteSchema = new Schema(
   },
 );
 
-noteSchema.index({ title: 'text', content: 'text', tag: 1 }); // Додаємо текстовий індекс
+noteSchema.index({ title: 'text', content: 'text' }); // Додаємо текстовий індекс
+noteSchema.index({ tag: 1 }); // Додаємо окремий звичайний індекс для поля tag
 
 export const Note = model('Note', noteSchema);
