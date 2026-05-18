@@ -1,14 +1,31 @@
 import createHttpError from 'http-errors';
 import { Note } from '../models/note.js';
 
-// GET-запит до маршруту "/notes" Список усіх нотаток
-
 export const getAllNotes = async (req, res) => {
-  const notes = await Note.find();
-  res.status(200).json(notes);
-};
+  const { page = 1, perPage = 10, tag, search } = req.query;
+  const skip = (page - 1) * perPage;
+  const limit = perPage;
+  const filter = {};
 
-// Конкретна нотатка за id
+  if (tag) {
+    filter.tag = tag;
+  }
+
+  if (search) {
+    filter.$text = { $search: search };
+  }
+
+  const notesQuery = Note.find(filter);
+
+  const [totalItems, notes] = await Promise.all([
+    Note.countDocuments(filter),
+    notesQuery.skip(skip).limit(limit),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  res.status(200).json({ page, perPage, totalItems, totalPages, notes });
+};
 
 export const getNoteById = async (req, res) => {
   const { noteId } = req.params;
@@ -21,15 +38,11 @@ export const getNoteById = async (req, res) => {
   res.status(200).json(note);
 };
 
-// Створення нової нотатки
-
 export const createNote = async (req, res) => {
   const newNote = await Note.create(req.body);
 
   res.status(201).json(newNote);
 };
-
-//Видалення нотатки за ID
 
 export const deleteNote = async (req, res) => {
   const { noteId } = req.params;
@@ -42,7 +55,6 @@ export const deleteNote = async (req, res) => {
   res.status(200).json(note);
 };
 
-// Оновлення нотатки
 export const updateNote = async (req, res) => {
   const { noteId } = req.params;
   const note = await Note.findOneAndUpdate({ _id: noteId }, req.body, {
