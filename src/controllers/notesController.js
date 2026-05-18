@@ -12,19 +12,20 @@ export const getAllNotes = async (req, res) => {
   }
 
   if (search) {
-    filter.$text = { $search: search };
+    const regex = new RegExp(search, 'i');
+    filter.$or = [{ title: regex }, { content: regex }];
   }
 
   const notesQuery = Note.find(filter);
 
-  const [totalItems, notes] = await Promise.all([
+  const [totalNotes, notes] = await Promise.all([
     Note.countDocuments(filter),
     notesQuery.skip(skip).limit(limit),
   ]);
 
-  const totalPages = Math.ceil(totalItems / limit);
+  const totalPages = Math.ceil(totalNotes / limit);
 
-  res.status(200).json({ page, perPage, totalItems, totalPages, notes });
+  res.status(200).json({ page, perPage, totalNotes, totalPages, notes });
 };
 
 export const getNoteById = async (req, res) => {

@@ -28,13 +28,13 @@ const objectIdValidation = (value, helpers) => {
 };
 
 // Окрема схема для noteId
-const noteIdSchema = Joi.object({
+const noteIdParamSchema = Joi.object({
   noteId: Joi.string().custom(objectIdValidation).required(),
 });
 
 // Схема для перевірки параметра noteId
-export const noteIdParamSchema = {
-  [Segments.PARAMS]: noteIdSchema,
+export const noteIdSchema = {
+  [Segments.PARAMS]: noteIdParamSchema,
 };
 
 export const updateNoteSchema = {
