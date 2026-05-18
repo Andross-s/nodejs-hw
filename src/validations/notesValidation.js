@@ -38,7 +38,7 @@ export const noteIdSchema = {
 };
 
 export const updateNoteSchema = {
-  [Segments.PARAMS]: noteIdSchema,
+  [Segments.PARAMS]: noteIdParamSchema,
   [Segments.BODY]: Joi.object({
     title: Joi.string().min(1).optional().trim(),
     content: Joi.string().allow('').optional().trim(),
