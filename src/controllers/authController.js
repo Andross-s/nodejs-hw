@@ -103,6 +103,9 @@ export const refreshUserSession = async (req, res) => {
   }
 
   // 4. Якщо всі перевірки пройшли добре, видаляємо поточну сесію
+  await session.deleteOne();
+
+  // 5. Створюємо нову сесію
   const newSession = await createSession(session.userId);
   setSessionCookies(res, newSession);
 
