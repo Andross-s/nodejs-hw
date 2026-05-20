@@ -3,12 +3,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import 'dotenv/config';
 import { errors } from 'celebrate';
+import cookieParser from 'cookie-parser';
 
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
 import { logger } from './middleware/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,7 +26,9 @@ app.use(
     origin: '*',
   }),
 );
+app.use(cookieParser());
 
+app.use(authRoutes);
 app.use(notesRoutes);
 
 // Middleware 404 (після всіх маршрутів)
