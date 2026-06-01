@@ -8,7 +8,7 @@ export const updateUserAvatar = async (req, res) => {
   if (!file) {
     throw createHttpError(400, 'No file');
   }
-  const result = await saveFileToCloudinary(file.buffer, User._id);
+  const result = await saveFileToCloudinary(file.buffer, user._id);
 
   const updatedUser = await User.findOneAndUpdate(
     { _id: user._id },
@@ -16,5 +16,5 @@ export const updateUserAvatar = async (req, res) => {
     { returnDocument: 'after' },
   );
 
-  res.status(200).json({ url: user.avatar });
+  res.status(200).json({ url: updatedUser.avatar });
 };
